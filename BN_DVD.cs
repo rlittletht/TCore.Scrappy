@@ -13,8 +13,22 @@ using ScrapySharp.Network;
 
 namespace TCore.Scrappy.BarnesAndNoble
 {
+
+    // ============================================================================
+    // D  V  D
+    //
+    // Scrape DVD information from B&N.
+    // ============================================================================
     public class DVD
     {
+
+        // ============================================================================
+        // D V D  E L E M E N T
+        //
+        // Holds all information about the DVD.  When scraping, will fill in anything
+        // that isn't already filled out.
+        // ============================================================================
+
         public class DvdElement
         {
             string m_sScanCode;
@@ -27,60 +41,57 @@ namespace TCore.Scrappy.BarnesAndNoble
             private string m_sMediaType;
             private List<string> m_plsClasses;
 
-            public DvdElement(OleDbDataReader odr)
-            {
-                m_sScanCode = odr.IsDBNull(0) ? "" : odr.GetString(0);
-                m_sTitle = odr.IsDBNull(1) ? "" : odr.GetString(1);
-                m_sSummary = odr.IsDBNull(2) ? "" : odr.GetString(2);
-                m_sNotes = odr.IsDBNull(3) ? "" : odr.GetString(3);
-                m_sQueryUrl = odr.IsDBNull(4) ? "" : odr.GetString(4);
-                m_sCoverSrc = odr.IsDBNull(5) ? "" : odr.GetString(5);
-                m_sClassification = odr.IsDBNull(6) ? "" : odr.GetString(6);
-                m_sMediaType = odr.IsDBNull(7) ? "" : odr.GetString(7);
-            }
-
             public DvdElement(string sScanCode)
             {
                 m_sScanCode = sScanCode;
                 m_sTitle = m_sSummary = "";
             }
 
+            // notes are internal only and not scraped from anywhere
             public string Notes
             {
                 get { return m_sNotes; }
                 set { m_sNotes = value; }
             }
 
+            // internal list of classifications (subjects), used to build the classification string
             public List<string> ClassList
             {
                 get { return m_plsClasses; }
                 set { m_plsClasses = value; }
             }
+
+            // UPC scan code
             public string ScanCode
             {
                 get { return m_sScanCode; }
                 set { m_sScanCode = value; }
             }
+
             public string MediaType
             {
                 get { return m_sMediaType; }
                 set { m_sMediaType = value; }
             }
+
             public string QueryUrl
             {
                 get { return m_sQueryUrl; }
                 set { m_sQueryUrl = value; }
             }
+
             public string CoverSrc
             {
                 get { return m_sCoverSrc; }
                 set { m_sCoverSrc = value; }
             }
+
             public string Classification
             {
                 get { return m_sClassification; }
                 set { m_sClassification = value; }
             }
+
             public string Summary
             {
                 get { return m_sSummary; }
@@ -93,6 +104,18 @@ namespace TCore.Scrappy.BarnesAndNoble
             }
         }
 
+        /*----------------------------------------------------------------------------
+        	%%Function: FScrapeDvd
+        	%%Qualified: TCore.Scrappy.BarnesAndNoble.DVD.FScrapeDvd
+        	%%Contact: rlittle
+        	
+            Given a DvdElement, go to B&N and scrape all the parts of the DvdElement
+            that aren't already filled out.  If anything goes wrong, fill in a
+            description in sError and return false.
+
+            (NOTE: just because we failed to scrape certain elements, like subjects,
+            we won't return failure. some things won't always be there)
+        ----------------------------------------------------------------------------*/
         public static bool FScrapeDvd(ref DvdElement dvd, out string sError)
         {
             string sCode;
@@ -121,7 +144,10 @@ namespace TCore.Scrappy.BarnesAndNoble
                 if (!FUpdateMediaType(dvd, wp))
                     return false;
 
-                FUpdateMediaImage(dvd, wp);
+                // don't fail if we can't get a cover src
+                FUpdateCoverSrc(dvd, wp);
+
+                // don't fail if we can't get any subjects
                 FUpdateCategories(dvd, wp);
                 }
             catch (Exception exc)
@@ -166,7 +192,7 @@ namespace TCore.Scrappy.BarnesAndNoble
 
             return true;
         }
-        private static bool FUpdateMediaImage(DvdElement dvd, WebPage wp)
+        private static bool FUpdateCoverSrc(DvdElement dvd, WebPage wp)
         {
             if (String.IsNullOrEmpty(dvd.CoverSrc))
                 {
