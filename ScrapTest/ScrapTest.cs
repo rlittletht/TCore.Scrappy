@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TCore.CmdLine;
+using TCore.Scrappy.BarnesAndNoble;
 
 namespace ScrapTest
 {
@@ -14,7 +15,8 @@ namespace ScrapTest
         {
             Unknown,
             GenericISBN,
-            GenericUPC
+            GenericUPC,
+            BarnesAndNoble_DVD,
         }
 
         private TestMethod m_tm;
@@ -29,6 +31,8 @@ namespace ScrapTest
                 m_tm = TestMethod.GenericISBN;
             else if (cls.Switch == "U")
                 m_tm = TestMethod.GenericUPC;
+            else if (cls.Switch == "D")
+                m_tm = TestMethod.BarnesAndNoble_DVD;
             else if (cls.Switch == "i")
                 m_sTestArg = sParam;
             else if (cls.Switch == "pw")
@@ -50,6 +54,7 @@ namespace ScrapTest
                                                       new CmdLineSwitch("U", true, false, "Generic UPC scrape", "Generic UPC", null),
                                                       new CmdLineSwitch("i", false, false, "test input", "input", null),
                                                       new CmdLineSwitch("pw", false, false, "password", "password", null),
+                                                      new CmdLineSwitch("D", true, false, "Scrape DVD Info", "DVD", null),
                                                       });
 
             CmdLine cmdLine = new CmdLine(cfg);
@@ -66,10 +71,31 @@ namespace ScrapTest
 
         }
 
+        void CallBN_DVD(string sParam)
+        {
+            TCore.Scrappy.BarnesAndNoble.DVD.DvdElement dvd = new DVD.DvdElement(sParam);
+            string sError;
+
+            if (DVD.FScrapeDvd(ref dvd, out sError))
+                {
+                Console.WriteLine("\nDVD:");
+                Console.WriteLine("ScanCode: {0}", dvd.ScanCode);
+                Console.WriteLine("Title: {0}", dvd.Title);
+                Console.WriteLine("Summary: {0}", dvd.Summary);
+                Console.WriteLine("Classification: {0}", dvd.Classification);
+                Console.WriteLine("MediaType: {0}", dvd.MediaType);
+                Console.WriteLine("CoverSrc: {0}", dvd.CoverSrc);
+
+                }
+            else
+                {
+                Console.WriteLine("DVD Scrape failed: {0}", sError);
+                }
+        }
+
         public void Run(string[] args)
         {
             ParseCmdLine(args);
-            string sResult = "";
 
             if (m_tm == TestMethod.Unknown)
                 return;
@@ -77,13 +103,16 @@ namespace ScrapTest
             switch (m_tm)
                 {
                 case TestMethod.GenericUPC:
-                    sResult = TCore.Scrappy.GenericUPC.FetchTitleFromUPC(m_sTestArg);
+                    Console.WriteLine("Test method returned: {0}", TCore.Scrappy.GenericUPC.FetchTitleFromUPC(m_sTestArg));
                     break;
                 case TestMethod.GenericISBN:
-                    sResult = TCore.Scrappy.GenericISBN.FetchTitleFromISBN13(m_sTestArg, m_sPassword);
+                    Console.WriteLine("Test method returned: {0}", TCore.Scrappy.GenericISBN.FetchTitleFromISBN13(m_sTestArg, m_sPassword));
+                    break;
+                case TestMethod.BarnesAndNoble_DVD:
+                    CallBN_DVD(m_sTestArg);
                     break;
                 }
-            Console.WriteLine("Test method returned: {0}", sResult);
+            
         }
     }
 }

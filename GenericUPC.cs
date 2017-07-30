@@ -23,6 +23,7 @@ namespace TCore.Scrappy
 
                 WebPage wp = sbr.NavigateToPage(new Uri("http://www.searchupc.com/upc/" + sCode));
 
+
                 HtmlNodeCollection nodes = wp.Html.SelectNodes("//table[@id='searchresultdata']");
                 HtmlNodeCollection nodesTr = nodes[0].SelectNodes("tr");
 
