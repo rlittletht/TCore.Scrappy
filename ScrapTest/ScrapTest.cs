@@ -17,6 +17,7 @@ namespace ScrapTest
             GenericISBN,
             GenericUPC,
             BarnesAndNoble_DVD,
+            BarnesAndNoble_Book,
         }
 
         private TestMethod m_tm;
@@ -33,6 +34,8 @@ namespace ScrapTest
                 m_tm = TestMethod.GenericUPC;
             else if (cls.Switch == "D")
                 m_tm = TestMethod.BarnesAndNoble_DVD;
+            else if (cls.Switch == "B")
+                m_tm = TestMethod.BarnesAndNoble_Book;
             else if (cls.Switch == "i")
                 m_sTestArg = sParam;
             else if (cls.Switch == "pw")
@@ -55,6 +58,7 @@ namespace ScrapTest
                                                       new CmdLineSwitch("i", false, false, "test input", "input", null),
                                                       new CmdLineSwitch("pw", false, false, "password", "password", null),
                                                       new CmdLineSwitch("D", true, false, "Scrape DVD Info", "DVD", null),
+                                                      new CmdLineSwitch("B", true, false, "Scrape Book Info", "Book", null),
                                                       });
 
             CmdLine cmdLine = new CmdLine(cfg);
@@ -93,6 +97,23 @@ namespace ScrapTest
                 }
         }
 
+        void CallBN_Book(string sParam)
+        {
+            TCore.Scrappy.BarnesAndNoble.Book.BookElement book = new Book.BookElement(sParam);
+            string sError;
+
+            if (Book.FScrapeBook(book, out sError))
+                {
+                Console.WriteLine("\nBook:");
+                Console.WriteLine("ScanCode: {0}", book.ScanCode);
+                Console.WriteLine("Title: {0}", book.Title);
+                }
+            else
+                {
+                Console.WriteLine("Book Scrape failed: {0}", sError);
+                }
+        }
+
         public void Run(string[] args)
         {
             ParseCmdLine(args);
@@ -111,8 +132,11 @@ namespace ScrapTest
                 case TestMethod.BarnesAndNoble_DVD:
                     CallBN_DVD(m_sTestArg);
                     break;
+                case TestMethod.BarnesAndNoble_Book:
+                    CallBN_Book(m_sTestArg);
+                    break;
                 }
-            
+
         }
     }
 }

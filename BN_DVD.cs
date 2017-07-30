@@ -28,7 +28,6 @@ namespace TCore.Scrappy.BarnesAndNoble
         // Holds all information about the DVD.  When scraping, will fill in anything
         // that isn't already filled out.
         // ============================================================================
-
         public class DvdElement
         {
             string m_sScanCode;
