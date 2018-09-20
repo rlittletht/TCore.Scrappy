@@ -27,6 +27,9 @@ namespace TCore.Scrappy.BarnesAndNoble
         {
             private string m_sScanCode;
             private string m_sTitle;
+            private string m_sAuthor;
+            private string m_sSeries;
+            private string m_sReleaseDate;
 
             public BookElement(string sScanCode)
             {
@@ -43,6 +46,24 @@ namespace TCore.Scrappy.BarnesAndNoble
             {
                 get { return m_sTitle; }
                 set { m_sTitle = value; }
+            }
+
+            public string Author
+            {
+                get { return m_sAuthor; }
+                set { m_sAuthor = value; } 
+            }
+
+            public string Series
+            {
+                get { return m_sSeries; }
+                set { m_sSeries = value; }
+            }
+
+            public string ReleaseDate
+            {
+                get { return m_sReleaseDate; }
+                set { m_sReleaseDate = value; }
             }
         }
 
@@ -90,7 +111,7 @@ namespace TCore.Scrappy.BarnesAndNoble
         {
             if (String.IsNullOrEmpty(book.Title))
                 {
-                HtmlNode node = wp.Html.SelectSingleNode("//section[@id='prodSummary']/h1");
+                HtmlNode node = wp.Html.SelectSingleNode("//h1[@itemprop='name']");
 
                 if (node == null)
                     {
