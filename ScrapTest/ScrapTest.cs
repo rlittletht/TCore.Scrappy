@@ -107,6 +107,7 @@ namespace ScrapTest
                 Console.WriteLine("\nBook:");
                 Console.WriteLine("ScanCode: {0}", book.ScanCode);
                 Console.WriteLine("Title: {0}", book.Title);
+                Console.WriteLine("Author: {0}", book.Author);
                 }
             else
                 {

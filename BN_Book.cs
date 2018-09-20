@@ -30,6 +30,7 @@ namespace TCore.Scrappy.BarnesAndNoble
             private string m_sAuthor;
             private string m_sSeries;
             private string m_sReleaseDate;
+            private string m_sSummary;
 
             public BookElement(string sScanCode)
             {
@@ -65,6 +66,12 @@ namespace TCore.Scrappy.BarnesAndNoble
                 get { return m_sReleaseDate; }
                 set { m_sReleaseDate = value; }
             }
+
+            public string Summary
+            {
+                get { return m_sSummary; }
+                set { m_sSummary = value; }
+            }
         }
 
         /*----------------------------------------------------------------------------
@@ -98,6 +105,12 @@ namespace TCore.Scrappy.BarnesAndNoble
                     {
                     return false;
                     }
+                
+                if (!FUpdateAuthor(book, wp, ref sError))
+                {
+                    return false;
+                }
+
             }
             catch (Exception exc)
                 {
@@ -110,7 +123,7 @@ namespace TCore.Scrappy.BarnesAndNoble
         static bool FUpdateTitle(BookElement book, WebPage wp, ref string sError)
         {
             if (String.IsNullOrEmpty(book.Title))
-                {
+            {
                 HtmlNode node = wp.Html.SelectSingleNode("//h1[@itemprop='name']");
 
                 if (node == null)
@@ -120,7 +133,24 @@ namespace TCore.Scrappy.BarnesAndNoble
                     }
 
                 book.Title = Sanitize.SanitizeTitle(node.InnerText);
+            }
+            return true;
+        }
+
+        static bool FUpdateAuthor(BookElement book, WebPage wp, ref string sError)
+        {
+            if (String.IsNullOrEmpty(book.Author))
+            {
+                HtmlNode node = wp.Html.SelectSingleNode("//span[@itemprop='author']");
+
+                if (node == null)
+                {
+                    sError = "Couldn't find author";
+                    return false;
                 }
+
+                book.Author = Sanitize.SanitizeTitle(node.InnerText);
+            }
             return true;
         }
     }
