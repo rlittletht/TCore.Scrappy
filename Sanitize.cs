@@ -124,6 +124,16 @@ namespace TCore.Scrappy
             return (s.Substring(start, end - start)).Replace("\n", string.Empty);
         }
 
+        public static string SanitizeDate(string s)
+        {
+            int start = s.IndexOf("Publication date:\n") + "Publication Date:\n".Length;
+            string substr = s.Substring(start);
+            int end = substr.IndexOf("\n");
+            return (substr.Substring(0, end)).Replace("\n", string.Empty);
+        }
+
+        
+
         public static string SanitizeSummary(string sSummary)
         {
             return SanitizeString(sSummary, false);

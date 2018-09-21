@@ -184,8 +184,7 @@ namespace TCore.Scrappy.BarnesAndNoble
                     return false;
                 }
 
-                //ToDo: write another sanitize function to just extract the release date. 
-                book.ReleaseDate = Sanitize.SanitizeTitle(node.InnerText);
+                book.ReleaseDate = Sanitize.SanitizeDate(node.InnerText);
             }
             return true;
         }
@@ -203,9 +202,14 @@ namespace TCore.Scrappy.BarnesAndNoble
                         book.Series = "N/A";
                         return true;
                     }
-
-                    //Todo: Need to create new sanitize function for series
-                    book.Series = Sanitize.SanitizeSeries(node.InnerText);
+                    if (node.InnerText.Contains("Series"))
+                    {
+                        book.Series = Sanitize.SanitizeSeries(node.InnerText);
+                    }
+                    else
+                    {
+                        book.Series = "N/A";
+                    }
                 }
                 catch(Exception ex)
                 {
@@ -218,19 +222,16 @@ namespace TCore.Scrappy.BarnesAndNoble
 
         static bool FUpdateSummary(BookElement book, WebPage wp, ref string sError)
         {
-            if (String.IsNullOrEmpty(book.Series))
+            if (String.IsNullOrEmpty(book.Summary))
             {
-
-                HtmlNode node = wp.Html.SelectSingleNode("//div[@id=productInfoOverview]");
+                HtmlNode node = wp.Html.SelectSingleNode("//div[@id='productInfoOverview']");
 
                 if (node == null)
                 {
                     sError = "Couldn't find summary";
                     return false;
                 }
-
-                //Todo: need to create new sanitize function for summary. or check to see if the current one can work or not
-                book.Summary = Sanitize.SanitizeTitle(node.InnerText);
+                book.Summary = Sanitize.SanitizeSummary(node.InnerText);
             }
             return true;
         }
