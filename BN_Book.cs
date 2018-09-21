@@ -98,7 +98,7 @@ namespace TCore.Scrappy.BarnesAndNoble
                 ScrapingBrowser sbr = new ScrapingBrowser();
                 sbr.AllowAutoRedirect = true;
                 sbr.AllowMetaRedirect = true;
-
+                
                 WebPage wp = sbr.NavigateToPage(new Uri("https://www.barnesandnoble.com/s/" + sCode));
 
                 if (!FUpdateTitle(book, wp, ref sError))
@@ -140,10 +140,12 @@ namespace TCore.Scrappy.BarnesAndNoble
             if (String.IsNullOrEmpty(book.Title))
             {
                 HtmlNode node = wp.Html.SelectSingleNode("//h1[@itemprop='name']");
+                //HtmlNode node = wp.Html.SelectSingleNode("//section[@id='prodSummary']/h1");
+                //HtmlNode node = wp.Html.SelectSingleNode("//div[@id='pdp-header-info']/h1");
 
                 if (node == null)
                     {
-                    sError = "Couldn't find title";
+                    sError = "Couldn't find title: "+wp.Html.InnerHtml;
                     return false;
                     }
 
