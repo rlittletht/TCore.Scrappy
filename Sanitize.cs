@@ -29,13 +29,13 @@ namespace TCore.Scrappy
                                      ^^^^
             if fBackwards is set and match is " DVD"
 
-            if fTruncBackwards is true, then return the MATCHED string, otherwise
+            if fTruncBackwards is true, then return everything AFTER the matched string, otherwise
             return the string *UP TO* the match
 
                 This DVD is the last. DVD
 
             returns "This DVD is the last." if the match is " DVD", and backwards is true, and truncBackwards is false
-            returns " DVD" if the match is " DVD", and backwards is true, and truncBackwards is true
+            returns " DVD" if the match is "", and backwards is true, and truncBackwards is true
         ----------------------------------------------------------------------------*/
         public static bool FSanitizeStringCore(string s, string sFilter, bool fBackwards, bool fTruncBackwards, out string sNew)
         {
@@ -59,6 +59,23 @@ namespace TCore.Scrappy
                 sNew = s.Substring(0, match.Index);
 
             return true;
+        }
+
+        [TestCase("This DVD is the last. DVD", " DVD", true, false, true, "This DVD is the last.")]
+        [TestCase("This DVD is the last. DVD", " DVD", true, true, true, "")]
+        [TestCase("This DVD is the last. DVD", " DVD", false, true, true, " is the last. DVD")]
+        [TestCase("This DVD is the last. DVD", " DVD", false, false, true, "This")]
+        [TestCase("This DVD is the last.", " LD", false, false, false, "This DVD is the last.")]    // no matches
+        [TestCase("DVD: This is a dvd", "DVD: ", false, true, true, "This is a dvd")] // match the start of the string
+        [Test]
+        public static void TestFSanitizeStringCore(string sIn, string sFilter, bool fBackwards, bool fTruncBackwards,
+            bool fExpectedResult, string sExpectedResult)
+        {
+            string sResult;
+            bool fResult = FSanitizeStringCore(sIn, sFilter, fBackwards, fTruncBackwards, out sResult);
+
+            Assert.AreEqual(fExpectedResult, fResult);
+            Assert.AreEqual(sExpectedResult, sResult);
         }
 
         public static string SanitizeStringCore(string s, string sFilter, bool fBackwards, bool fTruncBackwards)
