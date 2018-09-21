@@ -13,6 +13,30 @@ namespace TCore.Scrappy
 {
     public class Sanitize
     {
+        /*----------------------------------------------------------------------------
+        	%%Function: FSanitizeStringCore
+        	%%Qualified: TCore.Scrappy.Sanitize.FSanitizeStringCore
+        	%%Contact: rlittle
+        	
+            sanitize the given string s.
+
+            sFilter is a regular expression that will be used to match against the 
+            string.
+
+            if fBackwards is true, then we will match the *last* match in the string
+            e.g.
+                This DVD is the last. DVD
+                                     ^^^^
+            if fBackwards is set and match is " DVD"
+
+            if fTruncBackwards is true, then return the MATCHED string, otherwise
+            return the string *UP TO* the match
+
+                This DVD is the last. DVD
+
+            returns "This DVD is the last." if the match is " DVD", and backwards is true, and truncBackwards is false
+            returns " DVD" if the match is " DVD", and backwards is true, and truncBackwards is true
+        ----------------------------------------------------------------------------*/
         public static bool FSanitizeStringCore(string s, string sFilter, bool fBackwards, bool fTruncBackwards, out string sNew)
         {
             MatchCollection matches = Regex.Matches(s, sFilter);
