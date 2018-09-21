@@ -76,6 +76,13 @@ namespace TCore.Scrappy
             return SanitizeString(sTitle, true);
         }
 
+        public static string SanitizeSeries(string s)
+        {
+            int start = s.IndexOf("Series:") + "series:".Length;
+            int end = s.IndexOf("Pages");
+            return (s.Substring(start, end - start)).Replace("\n", string.Empty);
+        }
+
         public static string SanitizeSummary(string sSummary)
         {
             return SanitizeString(sSummary, false);

@@ -203,7 +203,7 @@ namespace TCore.Scrappy.BarnesAndNoble
                     }
 
                     //Todo: Need to create new sanitize function for series
-                    book.Series = Sanitize.SanitizeTitle(node.InnerText);
+                    book.Series = Sanitize.SanitizeSeries(node.InnerText);
                 }
                 catch(Exception ex)
                 {
