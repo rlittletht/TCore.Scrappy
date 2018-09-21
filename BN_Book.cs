@@ -111,6 +111,21 @@ namespace TCore.Scrappy.BarnesAndNoble
                     return false;
                 }
 
+                if (!FUpdateReleaseDate(book, wp, ref sError))
+                {
+                    return false;
+                }
+
+                if (!FUpdateSeries(book, wp, ref sError))
+                {
+                    return false;
+                }
+
+                if (!FUpdateSummary(book, wp, ref sError))
+                {
+                    return false;
+                }
+
             }
             catch (Exception exc)
                 {
@@ -150,6 +165,70 @@ namespace TCore.Scrappy.BarnesAndNoble
                 }
 
                 book.Author = Sanitize.SanitizeTitle(node.InnerText);
+            }
+            return true;
+        }
+
+        static bool FUpdateReleaseDate(BookElement book, WebPage wp, ref string sError)
+        {
+            if (String.IsNullOrEmpty(book.ReleaseDate))
+            {
+
+                HtmlNode node = wp.Html.SelectSingleNode("//div[@id='ProductDetailsTab']");
+
+                if (node == null)
+                {
+                    sError = "Couldn't find release date";
+                    return false;
+                }
+
+                //ToDo: write another sanitize function to just extract the release date. 
+                book.ReleaseDate = Sanitize.SanitizeTitle(node.InnerText);
+            }
+            return true;
+        }
+
+        static bool FUpdateSeries(BookElement book, WebPage wp, ref string sError)
+        {
+            if (String.IsNullOrEmpty(book.Series)) {
+
+                try
+                {
+                    HtmlNode node = wp.Html.SelectSingleNode("//div[@id='ProductDetailsTab']");
+
+                    if (node == null)
+                    {
+                        book.Series = "N/A";
+                        return true;
+                    }
+
+                    //Todo: Need to create new sanitize function for series
+                    book.Series = Sanitize.SanitizeTitle(node.InnerText);
+                }
+                catch(Exception ex)
+                {
+                    book.Series = "N/A";
+                    return true;
+                }
+            }
+            return true;
+        }
+
+        static bool FUpdateSummary(BookElement book, WebPage wp, ref string sError)
+        {
+            if (String.IsNullOrEmpty(book.Series))
+            {
+
+                HtmlNode node = wp.Html.SelectSingleNode("//div[@id=productInfoOverview]");
+
+                if (node == null)
+                {
+                    sError = "Couldn't find summary";
+                    return false;
+                }
+
+                //Todo: need to create new sanitize function for summary. or check to see if the current one can work or not
+                book.Summary = Sanitize.SanitizeTitle(node.InnerText);
             }
             return true;
         }
