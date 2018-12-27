@@ -122,11 +122,12 @@ namespace TCore.Scrappy.BarnesAndNoble
                     return false;
                 }
 
+#if TWEEDY_FIX_SUMMARY
                 if (!FUpdateSummary(book, wp, ref sError))
                 {
                     return false;
                 }
-
+#endif
             }
             catch (Exception exc)
             {
