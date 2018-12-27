@@ -119,10 +119,21 @@ namespace TCore.Scrappy
 
         public static string SanitizeSeries(string s)
         {
-            int start = s.IndexOf("Series:") + "series:".Length;
-            int end = s.IndexOf("Pages");
-            return (s.Substring(start, end - start)).Replace("\n", string.Empty);
+            int start = s.IndexOf("Series:\n") + "series:\n".Length;
+            string substr = s.Substring(start);
+            int end = substr.IndexOf("\n\n");
+            return (substr.Substring(0, end)).Replace("\n", string.Empty);
         }
+
+        public static string SanitizeDate(string s)
+        {
+            int start = s.IndexOf("Publication date:\n") + "Publication Date:\n".Length;
+            string substr = s.Substring(start);
+            int end = substr.IndexOf("\n");
+            return (substr.Substring(0, end)).Replace("\n", string.Empty);
+        }
+
+        
 
         public static string SanitizeSummary(string sSummary)
         {

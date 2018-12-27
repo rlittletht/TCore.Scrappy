@@ -108,10 +108,10 @@ namespace ScrapTest
                 Console.WriteLine("ScanCode: {0}", book.ScanCode);
                 Console.WriteLine("Title: {0}", book.Title);
                 Console.WriteLine("Author: {0}", book.Author);
-                Console.WriteLine("Summary: {0}", book.Summary);
                 Console.WriteLine("Series: {0}", book.Series);
                 Console.WriteLine("Release Date: {0}", book.ReleaseDate);
-                }
+                Console.WriteLine("Summary: {0}", book.Summary);
+            }
             else
                 {
                 Console.WriteLine("Book Scrape failed: {0}", sError);
