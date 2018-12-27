@@ -94,18 +94,19 @@ namespace TCore.Scrappy.BarnesAndNoble
             sError = "";
 
             try
-                {
+            {
                 ScrapingBrowser sbr = new ScrapingBrowser();
                 sbr.AllowAutoRedirect = true;
                 sbr.AllowMetaRedirect = true;
-                
+                ServicePointManager.Expect100Continue = true;
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                 WebPage wp = sbr.NavigateToPage(new Uri("https://www.barnesandnoble.com/s/" + sCode));
 
                 if (!FUpdateTitle(book, wp, ref sError))
-                    {
+                {
                     return false;
-                    }
-                
+                }
+
                 if (!FUpdateAuthor(book, wp, ref sError))
                 {
                     return false;
@@ -128,10 +129,13 @@ namespace TCore.Scrappy.BarnesAndNoble
 
             }
             catch (Exception exc)
-                {
+            {
                 sError = exc.Message;
+                if (exc.InnerException != null)
+                    sError += " + " + exc.InnerException.Message;
                 return false;
-                }
+            }
+
             return true;
         }
 
