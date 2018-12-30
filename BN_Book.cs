@@ -122,12 +122,10 @@ namespace TCore.Scrappy.BarnesAndNoble
                     return false;
                 }
 
-#if TWEEDY_FIX_SUMMARY
                 if (!FUpdateSummary(book, wp, ref sError))
                 {
                     return false;
                 }
-#endif
             }
             catch (Exception exc)
             {
@@ -229,7 +227,7 @@ namespace TCore.Scrappy.BarnesAndNoble
         {
             if (String.IsNullOrEmpty(book.Summary))
             {
-                HtmlNode node = wp.Html.SelectSingleNode("//div[@id='productInfoOverview']");
+                HtmlNode node = wp.Html.SelectSingleNode("//div[@class='text--medium overview-content']");
 
                 if (node == null)
                 {
