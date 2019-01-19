@@ -33,6 +33,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="cmdline, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\TCore.CmdLine.1.0.0\lib\net40\cmdline.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework, Version=3.9.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.3.9.0\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -49,12 +55,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\TCore.CmdLine\cmdline.csproj">
-      <Project>{b83640e8-72f6-4f92-93fd-7ff7cec3535e}</Project>
-      <Name>cmdline</Name>
-    </ProjectReference>
     <ProjectReference Include="..\TCore.Scrappy.csproj">
       <Project>{43787649-7722-45cb-886d-c5c5f78d473a}</Project>
       <Name>TCore.Scrappy</Name>
