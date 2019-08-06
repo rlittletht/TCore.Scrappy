@@ -133,7 +133,14 @@ namespace TCore.Scrappy
             return (substr.Substring(0, end)).Replace("\n", string.Empty);
         }
 
-        
+        public static string SanitizeCoverUrl(string s)
+        {
+            if (s.StartsWith("//"))
+                return s.Substring(2);
+
+            return null;
+        }
+
 
         public static string SanitizeSummary(string sSummary)
         {
