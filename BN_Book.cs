@@ -31,10 +31,22 @@ namespace TCore.Scrappy.BarnesAndNoble
             private string m_sSeries;
             private string m_sReleaseDate;
             private string m_sSummary;
+            private string m_sRawCoverUrl;
 
             public BookElement(string sScanCode)
             {
                 m_sScanCode = sScanCode;
+            }
+
+            public BookElement()
+            {
+                m_sScanCode = null;
+            }
+
+            public string RawCoverUrl
+            {
+                get => m_sRawCoverUrl;
+                set => m_sRawCoverUrl = value;
             }
 
             public string ScanCode
@@ -98,6 +110,8 @@ namespace TCore.Scrappy.BarnesAndNoble
                 ScrapingBrowser sbr = new ScrapingBrowser();
                 sbr.AllowAutoRedirect = true;
                 sbr.AllowMetaRedirect = true;
+                sbr.AutoDetectCharsetEncoding = false;
+                sbr.Encoding = Encoding.UTF8;
                 ServicePointManager.Expect100Continue = true;
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                 WebPage wp = sbr.NavigateToPage(new Uri("https://www.barnesandnoble.com/s/" + sCode));
@@ -122,12 +136,15 @@ namespace TCore.Scrappy.BarnesAndNoble
                     return false;
                 }
 
-#if TWEEDY_FIX_SUMMARY
+                if (!FUpdateRawCoverUrl(book, wp, ref sError))
+                {
+                    return false;
+                }
+
                 if (!FUpdateSummary(book, wp, ref sError))
                 {
                     return false;
                 }
-#endif
             }
             catch (Exception exc)
             {
@@ -194,6 +211,24 @@ namespace TCore.Scrappy.BarnesAndNoble
             return true;
         }
 
+        static bool FUpdateRawCoverUrl(BookElement book, WebPage wp, ref string sError)
+        {
+            if (String.IsNullOrEmpty(book.RawCoverUrl))
+            {
+
+                HtmlNode node = wp.Html.SelectSingleNode("//img[@id='pdpMainImage']");
+
+                if (node == null)
+                {
+                    sError = "Couldn't find release date";
+                    return false;
+                }
+
+                book.RawCoverUrl = Sanitize.SanitizeCoverUrl(node.Attributes["src"].Value);
+            }
+            return true;
+        }
+
         static bool FUpdateSeries(BookElement book, WebPage wp, ref string sError)
         {
             if (String.IsNullOrEmpty(book.Series)) {
@@ -229,7 +264,7 @@ namespace TCore.Scrappy.BarnesAndNoble
         {
             if (String.IsNullOrEmpty(book.Summary))
             {
-                HtmlNode node = wp.Html.SelectSingleNode("//div[@id='productInfoOverview']");
+                HtmlNode node = wp.Html.SelectSingleNode("//div[@class='text--medium overview-content']");
 
                 if (node == null)
                 {
