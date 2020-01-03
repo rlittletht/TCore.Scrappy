@@ -18,6 +18,17 @@ namespace TCore.Scrappy.BarnesAndNoble
     // ============================================================================
     public class Book
     {
+        [Flags]
+        public enum ScrapeSet
+        {
+            Author = 0x0001,
+            Summary = 0x0002,
+            Series = 0x0004,
+            ReleaseDate = 0x0008,
+            CoverSrc = 0x0010,
+            Title = 0x0020
+        }
+
         // ============================================================================
         // B O O K  E L E M E N T
         //
@@ -98,53 +109,44 @@ namespace TCore.Scrappy.BarnesAndNoble
             (NOTE: just because we failed to scrape certain elements, like subjects,
             we won't return failure. some things won't always be there)
         ----------------------------------------------------------------------------*/
-        public static bool FScrapeBook(BookElement book, out string sError)
+        public static bool FScrapeBookSet(BookElement book, out ScrapeSet set, out string sError)
         {
             string sCode;
-
+            
             sCode = book.ScanCode;
             sError = "";
+            set = 0;
 
             try
             {
                 ScrapingBrowser sbr = new ScrapingBrowser();
                 sbr.AllowAutoRedirect = true;
                 sbr.AllowMetaRedirect = true;
+                sbr.AvoidAsyncRequests = true;
                 sbr.AutoDetectCharsetEncoding = false;
                 sbr.Encoding = Encoding.UTF8;
                 ServicePointManager.Expect100Continue = true;
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                 WebPage wp = sbr.NavigateToPage(new Uri("https://www.barnesandnoble.com/s/" + sCode));
 
-                if (!FUpdateTitle(book, wp, ref sError))
-                {
-                    return false;
-                }
+                if (FUpdateTitle(book, wp, ref sError))
+                    set |= ScrapeSet.Title;
+    
+                if (FUpdateAuthor(book, wp, ref sError))
+                    set |= ScrapeSet.Author;
 
-                if (!FUpdateAuthor(book, wp, ref sError))
-                {
-                    return false;
-                }
+                if (FUpdateReleaseDate(book, wp, ref sError))
+                    set |= ScrapeSet.ReleaseDate;
 
-                if (!FUpdateReleaseDate(book, wp, ref sError))
-                {
-                    return false;
-                }
+                if (FUpdateSeries(book, wp, ref sError))
+                    set |= ScrapeSet.Series;
 
-                if (!FUpdateSeries(book, wp, ref sError))
-                {
-                    return false;
-                }
+                if (FUpdateRawCoverUrl(book, wp, ref sError))
+                    set |= ScrapeSet.CoverSrc;
 
-                if (!FUpdateRawCoverUrl(book, wp, ref sError))
-                {
-                    return false;
-                }
+                if (FUpdateSummary(book, wp, ref sError))
+                    set |= ScrapeSet.Summary;
 
-                if (!FUpdateSummary(book, wp, ref sError))
-                {
-                    return false;
-                }
             }
             catch (Exception exc)
             {
@@ -153,6 +155,27 @@ namespace TCore.Scrappy.BarnesAndNoble
                     sError += " + " + exc.InnerException.Message;
                 return false;
             }
+
+            if (set == 0)
+                return false;
+
+            return true;
+        }
+
+        public static bool FScrapeBook(BookElement book, out string sError)
+        {
+            ScrapeSet set;
+            ScrapeSet setAllLegacy = ScrapeSet.CoverSrc
+                               | ScrapeSet.Summary
+                               | ScrapeSet.Author
+                               | ScrapeSet.ReleaseDate
+                               | ScrapeSet.Title
+                               | ScrapeSet.Series;
+
+            bool f = FScrapeBookSet(book, out set, out sError);
+
+            if (!f || set != setAllLegacy)
+                return false;
 
             return true;
         }
@@ -172,8 +195,10 @@ namespace TCore.Scrappy.BarnesAndNoble
                     }
 
                 book.Title = Sanitize.SanitizeTitle(node.InnerText);
+                return true;
             }
-            return true;
+
+            return false;
         }
 
         static bool FUpdateAuthor(BookElement book, WebPage wp, ref string sError)
@@ -189,8 +214,10 @@ namespace TCore.Scrappy.BarnesAndNoble
                 }
 
                 book.Author = Sanitize.SanitizeTitle(node.InnerText);
+                return true;
             }
-            return true;
+
+            return false;
         }
 
         static bool FUpdateReleaseDate(BookElement book, WebPage wp, ref string sError)
@@ -207,8 +234,10 @@ namespace TCore.Scrappy.BarnesAndNoble
                 }
 
                 book.ReleaseDate = Sanitize.SanitizeDate(node.InnerText);
+                return true;
             }
-            return true;
+
+            return false;
         }
 
         static bool FUpdateRawCoverUrl(BookElement book, WebPage wp, ref string sError)
@@ -225,8 +254,10 @@ namespace TCore.Scrappy.BarnesAndNoble
                 }
 
                 book.RawCoverUrl = Sanitize.SanitizeCoverUrl(node.Attributes["src"].Value);
+                return true;
             }
-            return true;
+
+            return false;
         }
 
         static bool FUpdateSeries(BookElement book, WebPage wp, ref string sError)
@@ -256,8 +287,53 @@ namespace TCore.Scrappy.BarnesAndNoble
                     book.Series = "N/A";
                     return true;
                 }
+                return true;
             }
-            return true;
+
+            return false;
+        }
+
+        static void ExtractTextFromNode(HtmlNode node, StringBuilder sb)
+        {
+//            if (node.Name.ToLower() == "b")
+//                sb.Append("*");
+
+            if (node.Name.ToLower() == "u")
+                sb.Append("_");
+
+            if (node.HasChildNodes)
+            {
+                foreach (HtmlNode child in node.ChildNodes)
+                    ExtractTextFromNode(child, sb);
+            }
+
+            if (node.NodeType == HtmlNodeType.Text)
+            {
+                string s = node.InnerText;
+
+                if (s == "\n")
+                    s = " ";
+
+                if (s == " "
+                    && (sb.Length == 0 || Char.IsWhiteSpace(sb[sb.Length - 1])))
+                {
+                    s = "";
+                }
+
+                sb.Append(s);
+            }
+
+            if (node.Name.ToLower() == "p")
+                sb.Append("\n");
+
+            if (node.Name.ToLower() == "br")
+                sb.Append("&#10;");
+
+            if (node.Name.ToLower() == "u")
+                sb.Append("_");
+
+//            if (node.Name.ToLower() == "b")
+//                sb.Append("*");
         }
 
         static bool FUpdateSummary(BookElement book, WebPage wp, ref string sError)
@@ -271,9 +347,15 @@ namespace TCore.Scrappy.BarnesAndNoble
                     sError = "Couldn't find summary";
                     return false;
                 }
-                book.Summary = Sanitize.SanitizeSummary(node.InnerText);
+
+                StringBuilder sb = new StringBuilder();
+                ExtractTextFromNode(node, sb);
+
+                book.Summary = sb.ToString();
+                return true;
             }
-            return true;
+
+            return false;
         }
     }
 }
