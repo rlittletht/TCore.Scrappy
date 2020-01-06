@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BN_Book.cs" />
+    <Compile Include="BN_Core.cs" />
     <Compile Include="BN_DVD.cs" />
     <Compile Include="GenericISBN.cs" />
     <Compile Include="GenericUPC.cs" />
