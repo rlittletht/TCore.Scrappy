@@ -119,15 +119,7 @@ namespace TCore.Scrappy.BarnesAndNoble
 
             try
             {
-                ScrapingBrowser sbr = new ScrapingBrowser();
-                sbr.AllowAutoRedirect = true;
-                sbr.AllowMetaRedirect = true;
-                sbr.AvoidAsyncRequests = true;
-                sbr.AutoDetectCharsetEncoding = false;
-                sbr.Encoding = Encoding.UTF8;
-                ServicePointManager.Expect100Continue = true;
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                WebPage wp = sbr.NavigateToPage(new Uri("https://www.barnesandnoble.com/s/" + sCode));
+                WebPage wp = Core.BrowseToSearch(sCode);
 
                 if (FUpdateTitle(book, wp, ref sError))
                     set |= ScrapeSet.Title;
@@ -182,62 +174,20 @@ namespace TCore.Scrappy.BarnesAndNoble
 
         static bool FUpdateTitle(BookElement book, WebPage wp, ref string sError)
         {
-            if (String.IsNullOrEmpty(book.Title))
-            {
-                HtmlNode node = wp.Html.SelectSingleNode("//h1[@itemprop='name']");
-                //HtmlNode node = wp.Html.SelectSingleNode("//section[@id='prodSummary']/h1");
-                //HtmlNode node = wp.Html.SelectSingleNode("//div[@id='pdp-header-info']/h1");
-
-                if (node == null)
-                    {
-                    sError = "Couldn't find title: "+wp.Html.InnerHtml;
-                    return false;
-                    }
-
-                book.Title = Sanitize.SanitizeTitle(node.InnerText);
-                return true;
-            }
-
-            return false;
+            book.Title = Core.GetSimpleStringField(book.Title, "//h1[@itemprop='name']", wp, Sanitize.SanitizeTitle, ref sError, out bool fSetValue);
+            return fSetValue;
         }
 
         static bool FUpdateAuthor(BookElement book, WebPage wp, ref string sError)
         {
-            if (String.IsNullOrEmpty(book.Author))
-            {
-                HtmlNode node = wp.Html.SelectSingleNode("//span[@itemprop='author']");
-
-                if (node == null)
-                {
-                    sError = "Couldn't find author";
-                    return false;
-                }
-
-                book.Author = Sanitize.SanitizeTitle(node.InnerText);
-                return true;
-            }
-
-            return false;
+            book.Author = Core.GetSimpleStringField(book.Author, "//span[@itemprop='author']", wp, Sanitize.SanitizeTitle, ref sError, out bool fSetValue);
+            return fSetValue;
         }
 
         static bool FUpdateReleaseDate(BookElement book, WebPage wp, ref string sError)
         {
-            if (String.IsNullOrEmpty(book.ReleaseDate))
-            {
-
-                HtmlNode node = wp.Html.SelectSingleNode("//div[@id='ProductDetailsTab']");
-
-                if (node == null)
-                {
-                    sError = "Couldn't find release date";
-                    return false;
-                }
-
-                book.ReleaseDate = Sanitize.SanitizeDate(node.InnerText);
-                return true;
-            }
-
-            return false;
+            book.ReleaseDate = Core.GetSimpleStringField(book.ReleaseDate, "//div[@id='ProductDetailsTab']", wp, Sanitize.SanitizeDate, ref sError, out bool fSetValue);
+            return fSetValue;
         }
 
         static bool FUpdateRawCoverUrl(BookElement book, WebPage wp, ref string sError)
@@ -262,8 +212,8 @@ namespace TCore.Scrappy.BarnesAndNoble
 
         static bool FUpdateSeries(BookElement book, WebPage wp, ref string sError)
         {
-            if (String.IsNullOrEmpty(book.Series)) {
-
+            if (String.IsNullOrEmpty(book.Series))
+            {
                 try
                 {
                     HtmlNode node = wp.Html.SelectSingleNode("//div[@id='ProductDetailsTab']");
@@ -273,6 +223,7 @@ namespace TCore.Scrappy.BarnesAndNoble
                         book.Series = "N/A";
                         return true;
                     }
+
                     if (node.InnerText.Contains("Series"))
                     {
                         book.Series = Sanitize.SanitizeSeries(node.InnerText);
@@ -282,80 +233,24 @@ namespace TCore.Scrappy.BarnesAndNoble
                         book.Series = "N/A";
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     book.Series = "N/A";
                     return true;
                 }
+
                 return true;
             }
 
             return false;
         }
 
-        static void ExtractTextFromNode(HtmlNode node, StringBuilder sb)
-        {
-//            if (node.Name.ToLower() == "b")
-//                sb.Append("*");
 
-            if (node.Name.ToLower() == "u")
-                sb.Append("_");
-
-            if (node.HasChildNodes)
-            {
-                foreach (HtmlNode child in node.ChildNodes)
-                    ExtractTextFromNode(child, sb);
-            }
-
-            if (node.NodeType == HtmlNodeType.Text)
-            {
-                string s = node.InnerText;
-
-                if (s == "\n")
-                    s = " ";
-
-                if (s == " "
-                    && (sb.Length == 0 || Char.IsWhiteSpace(sb[sb.Length - 1])))
-                {
-                    s = "";
-                }
-
-                sb.Append(s);
-            }
-
-            if (node.Name.ToLower() == "p")
-                sb.Append("\n");
-
-            if (node.Name.ToLower() == "br")
-                sb.Append("&#10;");
-
-            if (node.Name.ToLower() == "u")
-                sb.Append("_");
-
-//            if (node.Name.ToLower() == "b")
-//                sb.Append("*");
-        }
 
         static bool FUpdateSummary(BookElement book, WebPage wp, ref string sError)
         {
-            if (String.IsNullOrEmpty(book.Summary))
-            {
-                HtmlNode node = wp.Html.SelectSingleNode("//div[@class='text--medium overview-content']");
-
-                if (node == null)
-                {
-                    sError = "Couldn't find summary";
-                    return false;
-                }
-
-                StringBuilder sb = new StringBuilder();
-                ExtractTextFromNode(node, sb);
-
-                book.Summary = sb.ToString();
-                return true;
-            }
-
-            return false;
+            book.Summary = Core.GetComplexTextField(book.Summary, "//div[@class='text--medium overview-content']", wp, Sanitize.SanitizeSummary, ref sError, out bool fSetValue);
+            return fSetValue;
         }
     }
 }
