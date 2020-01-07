@@ -78,9 +78,11 @@ namespace ScrapTest
         void CallBN_DVD(string sParam)
         {
             TCore.Scrappy.BarnesAndNoble.DVD.DvdElement dvd = new DVD.DvdElement(sParam);
+            DVD.ScrapeSet set;
+
             string sError;
 
-            if (DVD.FScrapeDvd(ref dvd, out sError))
+            if (DVD.FScrapeDvd(ref dvd, out set, out sError))
                 {
                 Console.WriteLine("\nDVD:");
                 Console.WriteLine("ScanCode: {0}", dvd.ScanCode);
