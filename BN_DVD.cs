@@ -49,6 +49,10 @@ namespace TCore.Scrappy.BarnesAndNoble
                 m_sTitle = m_sSummary = "";
             }
 
+            public DvdElement()
+            {
+            }
+
             // notes are internal only and not scraped from anywhere
             public string Notes
             {
@@ -140,7 +144,7 @@ namespace TCore.Scrappy.BarnesAndNoble
             (NOTE: just because we failed to scrape certain elements, like subjects,
             we won't return failure. some things won't always be there)
         ----------------------------------------------------------------------------*/
-        public static bool FScrapeDvd(ref DvdElement dvd, out ScrapeSet set, out string sError)
+        public static bool FScrapeDvd(DvdElement dvd, out DVD.ScrapeSet set, out string sError)
         {
             string sCode;
 
@@ -153,7 +157,7 @@ namespace TCore.Scrappy.BarnesAndNoble
             {
                 WebPage wp = Core.BrowseToSearch(sCode);
 
-                if (!FUpdateTitle(dvd, wp, ref sError))
+                if (FUpdateTitle(dvd, wp, ref sError))
                     set |= ScrapeSet.Title;
 
                 if (FUpdateSummary(dvd, wp, ref sError))
@@ -187,6 +191,7 @@ namespace TCore.Scrappy.BarnesAndNoble
 
         class BN_DigitalAdvertData
         {
+#pragma warning disable 649
             public class BN_ProductData
             {
                 public class BN_CategoryData
@@ -198,6 +203,7 @@ namespace TCore.Scrappy.BarnesAndNoble
 
                 public BN_CategoryData category;
             }
+#pragma warning restore 649
 
             public List<BN_ProductData> product;
         }
