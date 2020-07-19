@@ -2,14 +2,17 @@
 using System.Collections.Generic;
 using System.Data.OleDb;
 using System.IO;
+using System.IO.Ports;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.UI.HtmlControls;
 using System.Xml;
 using HtmlAgilityPack;
 using ScrapySharp.Network;
+// ReSharper disable All
 
 namespace TCore.Scrappy.BarnesAndNoble
 {
@@ -44,6 +47,10 @@ namespace TCore.Scrappy.BarnesAndNoble
             {
                 m_sScanCode = sScanCode;
                 m_sTitle = m_sSummary = "";
+            }
+
+            public DvdElement()
+            {
             }
 
             // notes are internal only and not scraped from anywhere
@@ -103,6 +110,28 @@ namespace TCore.Scrappy.BarnesAndNoble
             }
         }
 
+        static bool FUpdateTitle(DvdElement dvd, WebPage wp, ref string sError)
+        {
+            dvd.Title = Core.GetSimpleStringField(dvd.Title, "//h1[@itemprop='name']", wp, Sanitize.SanitizeTitle, ref sError, out bool fSetValue);
+            return fSetValue;
+        }
+
+        static bool FUpdateSummary(DvdElement dvd, WebPage wp, ref string sError)
+        {
+            dvd.Summary = Core.GetComplexTextField(dvd.Summary, "//div[@class='text--medium overview-content']", wp, Sanitize.SanitizeSummary, ref sError, out bool fSetValue);
+            return fSetValue;
+        }
+
+        [Flags]
+        public enum ScrapeSet
+        {
+            Summary = 0x0001,
+            CoverSrc = 0x0002,
+            Title = 0x0004,
+            MediaType = 0x0008,
+            Categories = 0x0010
+        }
+
         /*----------------------------------------------------------------------------
         	%%Function: FScrapeDvd
         	%%Qualified: TCore.Scrappy.BarnesAndNoble.DVD.FScrapeDvd
@@ -115,69 +144,97 @@ namespace TCore.Scrappy.BarnesAndNoble
             (NOTE: just because we failed to scrape certain elements, like subjects,
             we won't return failure. some things won't always be there)
         ----------------------------------------------------------------------------*/
-        public static bool FScrapeDvd(ref DvdElement dvd, out string sError)
+        public static bool FScrapeDvd(DvdElement dvd, out DVD.ScrapeSet set, out string sError)
         {
             string sCode;
 
             sCode = dvd.ScanCode;
             sError = "";
+            set = 0;
 
             // 0044004783521
             try
-                {
-                ScrapingBrowser sbr = new ScrapingBrowser();
-                sbr.AllowAutoRedirect = true;
-                sbr.AllowMetaRedirect = true;
+            {
+                WebPage wp = Core.BrowseToSearch(sCode);
 
-                WebPage wp = sbr.NavigateToPage(new Uri("https://www.barnesandnoble.com/s/" + sCode));
+                if (FUpdateTitle(dvd, wp, ref sError))
+                    set |= ScrapeSet.Title;
 
-                // get the product summary section
-                HtmlNode nodeSummary = wp.Html.SelectSingleNode("//section[@id='prodSummary']");
+                if (FUpdateSummary(dvd, wp, ref sError))
+                    set |= ScrapeSet.Summary;
 
-                if (!UpdateTitleFromSummary(nodeSummary, dvd, ref sError))
-                    return false;
-
-                if (!FUpdateSummary(dvd, wp))
-                    return false;
-
-                if (!FUpdateMediaType(dvd, wp))
-                    return false;
+                if (FUpdateMediaType(dvd, wp, ref sError))
+                    set |= ScrapeSet.MediaType;
 
                 // don't fail if we can't get a cover src
-                FUpdateCoverSrc(dvd, wp);
+                if (FUpdateCoverSrc(dvd, wp))
+                    set |= ScrapeSet.CoverSrc;
 
                 // don't fail if we can't get any subjects
-                FUpdateCategories(dvd, wp);
-                }
+                if (FUpdateCategories(dvd, wp))
+                    set |= ScrapeSet.Categories;
+            }
             catch (Exception exc)
-                {
+            {
                 sError = exc.Message;
+                if (exc.InnerException != null)
+                    sError += " + " + exc.InnerException.Message;
+
                 return false;
-                }
+            }
+
+            if (set == 0)
+                return false;
 
             return true;
         }
 
+        class BN_DigitalAdvertData
+        {
+#pragma warning disable 649
+            public class BN_ProductData
+            {
+                public class BN_CategoryData
+                {
+                    public string primaryCategory;
+                    public List<string> subCategory;
+                    public string productType;
+                }
+
+                public BN_CategoryData category;
+            }
+#pragma warning restore 649
+
+            public List<BN_ProductData> product;
+        }
+
         private static bool FUpdateCategories(DvdElement dvd, WebPage wp)
         {
-            if (String.IsNullOrEmpty(dvd.Classification))
-                {
-                HtmlNode nodeRelated = wp.Html.SelectSingleNode("//section[@id='relatedSubjects']");
+            // to figure out the category, we're going to go scraping the scripts
+            // looking for the advertising metadata. they may not care about showing the customer
+            // the genre of the dvd, but the care deeply about telling advertisers about what you are 
+            // browsing, so that is sure to be up to date
 
-                if (nodeRelated == null)
+            if (String.IsNullOrEmpty(dvd.Classification))
+            {
+                HtmlNode node = wp.Html.SelectSingleNode("//script[text()[contains(., 'subCategory')]]");
+
+                if (node == null)
                     return false;
 
-                // now get the list of items
-                HtmlNodeCollection nodeSubjects = nodeRelated.SelectNodes(".//li");
-                if (nodeSubjects.Count == 0)
+                string sRaw = node.InnerText;
+
+                BN_DigitalAdvertData digitalData = ScrapeScript.ExtractJsonValue<BN_DigitalAdvertData>(sRaw, "var digitalData");
+
+                if (digitalData == null || digitalData.product.Count == 0)
                     return false;
 
                 List<string> subjects = new List<string>();
 
-                foreach (HtmlNode node in nodeSubjects)
-                    {
-                    subjects.Add(node.InnerText);
-                    }
+                foreach (string subject in digitalData.product[0].category.subCategory)
+                {
+                    subjects.Add(subject);
+                }
 
                 if (subjects.Count == 0)
                     return false;
@@ -187,49 +244,74 @@ namespace TCore.Scrappy.BarnesAndNoble
                     return false;
 
                 dvd.Classification = string.Join(",", subjects);
-                }
+            }
 
             return true;
         }
+
+#if no
+        static bool FUpdateRawCoverUrl(BookElement book, WebPage wp, ref string sError)
+        {
+            if (String.IsNullOrEmpty(book.RawCoverUrl))
+            {
+
+                HtmlNode node = wp.Html.SelectSingleNode("//img[@id='pdpMainImage']");
+
+                if (node == null)
+                {
+                    sError = "Couldn't find release date";
+                    return false;
+                }
+
+                book.RawCoverUrl = Sanitize.SanitizeCoverUrl(node.Attributes["src"].Value);
+                return true;
+            }
+
+            return false;
+        }
+#endif
+
         private static bool FUpdateCoverSrc(DvdElement dvd, WebPage wp)
         {
             if (String.IsNullOrEmpty(dvd.CoverSrc))
-                {
+            {
                 HtmlNode node = wp.Html.SelectSingleNode("//img[@id='pdpMainImage']");
 
                 if (node == null)
                     return false;
 
-                dvd.CoverSrc = node.GetAttributeValue("src", "");
-                }
+                dvd.CoverSrc = Sanitize.SanitizeCoverUrl(node.GetAttributeValue("src", ""));
+                return true;
+            }
 
-            return true;
+            return false;
         }
-        private static bool FUpdateMediaType(DvdElement dvd, WebPage wp)
+
+
+        private static bool FUpdateMediaType(DvdElement dvd, WebPage wp, ref string sError)
         {
-            if (String.IsNullOrEmpty(dvd.MediaType))
-                {
-                HtmlNode node = wp.Html.SelectSingleNode("//section[@id='prodPromo']");
+            dvd.MediaType = Core.GetSimpleStringField(
+                dvd.MediaType,
+                "//h2[@id='pdp-info-format']",
+                wp,
+                Sanitize.SanitizeMediaType,
+                ref sError,
+                out bool fSetValue);
 
-                if (node == null)
-                    return false;
-
-                dvd.MediaType = Sanitize.SanitizeMediaType(node.InnerText);
-                }
-            return true;
+            return fSetValue;
         }
 
-        private static bool FUpdateSummary(DvdElement dvd, WebPage wp)
+        private static bool FUpdateSummary2(DvdElement dvd, WebPage wp)
         {
             if (String.IsNullOrEmpty(dvd.Summary))
-                {
+            {
                 HtmlNode nodeSummary = wp.Html.SelectSingleNode("//div[@id='productInfoOverview']");
 
                 if (nodeSummary == null)
                     return false;
 
                 dvd.Summary = Sanitize.SanitizeSummary(nodeSummary.InnerText);
-                }
+            }
 
             return true;
         }
@@ -238,18 +320,20 @@ namespace TCore.Scrappy.BarnesAndNoble
         {
             // fill in only those parts that are empty
             if (String.IsNullOrEmpty(dvd.Title))
-                {
+            {
                 // title is in the <h1> element
                 HtmlNode nodeTitle = nodeSummary.SelectSingleNode("h1");
 
                 // confirm that there is @itemprop='name'
                 if (nodeTitle.GetAttributeValue("itemprop", "") != "name")
-                    {
+                {
                     sError = "can't find title. prodsummary[@itemprop != 'name']";
                     return false;
-                    }
-                dvd.Title = Sanitize.SanitizeTitle(nodeTitle.InnerText);
                 }
+
+                dvd.Title = Sanitize.SanitizeTitle(nodeTitle.InnerText);
+            }
+
             return true;
         }
     }

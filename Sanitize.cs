@@ -13,6 +13,8 @@ namespace TCore.Scrappy
 {
     public class Sanitize
     {
+        public delegate string SanitizeStringDelegate(string s);
+
         /*----------------------------------------------------------------------------
         	%%Function: FSanitizeStringCore
         	%%Qualified: TCore.Scrappy.Sanitize.FSanitizeStringCore

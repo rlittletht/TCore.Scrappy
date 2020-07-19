@@ -20,6 +20,7 @@ namespace TCore.Scrappy
                 ScrapingBrowser sbr = new ScrapingBrowser();
                 sbr.AllowAutoRedirect = false;
                 sbr.AllowMetaRedirect = false;
+                sbr.AvoidAsyncRequests = true;
 
                 WebPage wp = sbr.NavigateToPage(new Uri("http://www.searchupc.com/upc/" + sCode));
 
