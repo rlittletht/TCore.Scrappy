@@ -82,7 +82,7 @@ namespace ScrapTest
 
             string sError;
 
-            if (DVD.FScrapeDvd(ref dvd, out set, out sError))
+            if (DVD.FScrapeDvd(dvd, out set, out sError))
                 {
                 Console.WriteLine("\nDVD:");
                 Console.WriteLine("ScanCode: {0}", dvd.ScanCode);
