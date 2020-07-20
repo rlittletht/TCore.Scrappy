@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
@@ -43,8 +44,8 @@ namespace TCore.Scrappy
             string sReq = String.Format(sRequestTemplate, sCode);
 
             HttpWebRequest req = (HttpWebRequest) WebRequest.Create(sReq);
-            req.Headers.Add(String.Format("x-api-key: {0}", sIsbnDbAccessKey));
-
+            
+            req.Headers.Add(String.Format("Authorization: {0}", sIsbnDbAccessKey));
             if (req != null)
                 {
                 HttpWebResponse resp;

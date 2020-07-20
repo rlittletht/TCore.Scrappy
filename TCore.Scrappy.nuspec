@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>Robert Little</authors>
+    <licenseUrl>https://raw.github.com/rlittletht/TCore.Scrappy/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/rlittletht/TCore.Scrappy</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Basic functions for scraping content from an html page, including fetching</description>
+    <releaseNotes>Update to use proper authentication for ISBNDB</releaseNotes>
+    <copyright>Copyright 2020</copyright>
+	<dependencies>
+		<group targetFramework="net461">
+			<dependency id="FSharp.Core" version="4.7.2"/>
+			<dependency id="HtmlAgilityPack" version="1.11.24"/>
+			<dependency id="Newtonsoft.Json" version="12.0.3"/>
+		</group>
+	</dependencies>
+  </metadata>
+  <files>
+	  <file src="bin/release/TCore.Scrappy.dll" target="lib\net461\TCore.Scrappy.dll"/>
+  </files>
+</package>
