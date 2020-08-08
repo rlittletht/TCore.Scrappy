@@ -16,7 +16,7 @@ namespace TCore.Scrappy
                 sCode = sCode.Substring(1);
 
             try
-                {
+            {
                 ScrapingBrowser sbr = new ScrapingBrowser();
                 sbr.AllowAutoRedirect = false;
                 sbr.AllowMetaRedirect = false;
@@ -29,16 +29,16 @@ namespace TCore.Scrappy
                 HtmlNodeCollection nodesTr = nodes[0].SelectNodes("tr");
 
                 if (nodesTr == null || nodesTr.Count != 2)
-                    {
-                    return "!!NO TITLE FOUND";
-                    }
-                return nodesTr[1].ChildNodes[1].InnerText;
-
-                }
-            catch
                 {
-                return "!!NO TITLE FOUND";
+                    return "!!NO TITLE FOUND";
                 }
+
+                return nodesTr[1].ChildNodes[1].InnerText;
+            }
+            catch
+            {
+                return "!!NO TITLE FOUND";
+            }
         }
     }
 }

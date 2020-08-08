@@ -44,30 +44,30 @@ namespace TCore.Scrappy
             string sReq = String.Format(sRequestTemplate, sCode);
 
             HttpWebRequest req = (HttpWebRequest) WebRequest.Create(sReq);
-            
+
             req.Headers.Add(String.Format("Authorization: {0}", sIsbnDbAccessKey));
             if (req != null)
-                {
+            {
                 HttpWebResponse resp;
 
                 try
-                    {
+                {
                     resp = (HttpWebResponse) req.GetResponse();
-                    }
+                }
                 catch (Exception exc)
-                    {
+                {
                     sTitle = String.Format("!!NO TITLE FOUND: Exception: {0}", exc.Message);
                     resp = null;
-                    }
+                }
 
                 if (resp != null)
-                    {
+                {
                     Stream stm = resp.GetResponseStream();
 
                     try
-                        {
+                    {
                         if (stm != null)
-                            {
+                        {
                             StreamReader stmr = new StreamReader(resp.GetResponseStream());
                             string sJson = stmr.ReadToEnd();
                             stmr.Close();
@@ -78,25 +78,24 @@ namespace TCore.Scrappy
                             ISBNQueryResponse qr = jscript.Deserialize<ISBNQueryResponse>(sJson);
 
                             if (qr == null || qr.book.title == null)
-                                {
+                            {
                                 // try again scraping from bn.com...this is notoriously fragile, so its our last resort.
                                 sTitle = "!!NO TITLE FOUND" + sReq + ":" + sJson;
-                                }
+                            }
                             else
-                                {
+                            {
                                 sTitle = qr.book.title;
-                                }
                             }
                         }
+                    }
                     catch (Exception exc)
-                        {
+                    {
                         sTitle = "!!NO TITLE FOUND: (" + exc.Message + ")";
-                        }
                     }
                 }
+            }
 
             return sTitle;
         }
     }
-
 }
