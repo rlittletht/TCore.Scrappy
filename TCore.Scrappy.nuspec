@@ -21,5 +21,7 @@
   </metadata>
   <files>
 	  <file src="bin/release/TCore.Scrappy.dll" target="lib\net461\TCore.Scrappy.dll"/>
+	  <file src="bin/release/ScrapySharp.Core.dll" target="lib\net461\ScrapySharp.Core.dll"/>
+	  <file src="bin/release/ScrapySharp.dll" target="lib\net461\ScrapySharp.dll"/>
   </files>
 </package>
