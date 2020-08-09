@@ -244,9 +244,10 @@ namespace TCore.Scrappy.BarnesAndNoble
                     return false;
 
                 dvd.Classification = string.Join(",", subjects);
+                return true;
             }
 
-            return true;
+            return false;
         }
 
 #if no
