@@ -45,10 +45,10 @@ namespace TCore.Scrappy
             Match match;
 
             if (matches.Count == 0)
-                {
+            {
                 sNew = s;
                 return false;
-                }
+            }
 
             if (fBackwards)
                 match = matches[matches.Count - 1];
@@ -67,11 +67,16 @@ namespace TCore.Scrappy
         [TestCase("This DVD is the last. DVD", " DVD", true, true, true, "")]
         [TestCase("This DVD is the last. DVD", " DVD", false, true, true, " is the last. DVD")]
         [TestCase("This DVD is the last. DVD", " DVD", false, false, true, "This")]
-        [TestCase("This DVD is the last.", " LD", false, false, false, "This DVD is the last.")]    // no matches
+        [TestCase("This DVD is the last.", " LD", false, false, false, "This DVD is the last.")] // no matches
         [TestCase("DVD: This is a dvd", "DVD: ", false, true, true, "This is a dvd")] // match the start of the string
         [Test]
-        public static void TestFSanitizeStringCore(string sIn, string sFilter, bool fBackwards, bool fTruncBackwards,
-            bool fExpectedResult, string sExpectedResult)
+        public static void TestFSanitizeStringCore(
+            string sIn,
+            string sFilter,
+            bool fBackwards,
+            bool fTruncBackwards,
+            bool fExpectedResult,
+            string sExpectedResult)
         {
             string sResult;
             bool fResult = FSanitizeStringCore(sIn, sFilter, fBackwards, fTruncBackwards, out sResult);
@@ -91,7 +96,7 @@ namespace TCore.Scrappy
         {
             // try to get rid of the fluff...
             if (fTitle)
-                {
+            {
                 sTitle = SanitizeStringCore(sTitle, " \\(DVD\\)", false, false);
                 sTitle = SanitizeStringCore(sTitle, " \\[DVD", false, false);
                 sTitle = SanitizeStringCore(sTitle, " \\[Blu-ray", false, false);
@@ -106,8 +111,7 @@ namespace TCore.Scrappy
                 sTitle = SanitizeStringCore(sTitle, " DVD", false, false);
                 sTitle = SanitizeStringCore(sTitle, " \\[Includes Digital", false, false);
                 sTitle = SanitizeStringCore(sTitle, " \\[3 Discs", false, false);
-
-                }
+            }
 
             sTitle = SanitizeStringCore(sTitle, "Overview[\r\n]*", false, true);
             sTitle = SanitizeStringCore(sTitle, "[\r\n]+Advertising", true, false);
@@ -161,7 +165,10 @@ namespace TCore.Scrappy
         [TestCase("Overview\r\n\r\n\r\n\r\nRichard Festival.\r\n\r\n\r\nAdvertising\r\n$(document)", false, "Richard Festival.")]
         [TestCase("Overview\n\r\n\r\n\r\nRichard Festival.\r\n\r\n\r\nAdvertising\r\n$(document)", false, "Richard Festival.")]
         [TestCase("Overview\r\r\n\r\n\r\n\r\nRichard Festival.\r\n\r\n\r\nAdvertising\r\n$(document)", false, "Richard Festival.")]
-        [TestCase("Overview\r\n\r\n\r\n\r\nRichard worthwhile.\n\n\n\nAdvertising\n\n\n$(document).on('googleRelatedAdsEnabled Advertising', function() {", false, "Richard worthwhile.")]
+        [TestCase(
+            "Overview\r\n\r\n\r\n\r\nRichard worthwhile.\n\n\n\nAdvertising\n\n\n$(document).on('googleRelatedAdsEnabled Advertising', function() {",
+            false,
+            "Richard worthwhile.")]
         [TestCase("Summers (DVD)", true, "Summers")]
         [TestCase("Box (Special Edition)", true, "Box")]
         [TestCase("Lucy (Blu-ray +", true, "Lucy")]
@@ -192,7 +199,7 @@ namespace TCore.Scrappy
         public static string SanitizeMediaType(string sMediaType)
         {
             if (sMediaType != null)
-                {
+            {
                 sMediaType = sMediaType.ToLower();
 
                 if (sMediaType.IndexOf("blu-ray", StringComparison.Ordinal) >= 0)
@@ -203,7 +210,7 @@ namespace TCore.Scrappy
 
                 if (sMediaType.IndexOf("laserdisc", StringComparison.Ordinal) >= 0)
                     return "LD";
-                }
+            }
 
             return "";
         }
@@ -224,27 +231,27 @@ namespace TCore.Scrappy
         }
 
         static Dictionary<string, string> s_mpGeneric = new Dictionary<string, string>
-                                                            {
-                                                                {"comedy", "Comedy"},
-                                                                {"action", "Action"},
-                                                                {"adventure", "Adventure"},
-                                                                {"thriller", "Thriller"},
-                                                                {"fantasy", "Fantasy"},
-                                                                {"horror", "Horror"},
-                                                                {"family", "Family"},
-                                                                {"sci-fi", "Sci-Fi"},
-                                                                {"drama", "Drama"},
-                                                                {"mystery", "Mystery"},
-                                                                {"science fiction", "Sci-Fi"},
-                                                                {"historical", "Historical"}
-                                                            };
+        {
+            {"comedy", "Comedy"},
+            {"action", "Action"},
+            {"adventure", "Adventure"},
+            {"thriller", "Thriller"},
+            {"fantasy", "Fantasy"},
+            {"horror", "Horror"},
+            {"family", "Family"},
+            {"sci-fi", "Sci-Fi"},
+            {"drama", "Drama"},
+            {"mystery", "Mystery"},
+            {"science fiction", "Sci-Fi"},
+            {"historical", "Historical"}
+        };
 
         static string[] s_rgsIgnore = new string[]
-                                          {
-                                          "Children", "Parody", "Period", "Prehistoric", "Superhero", "Sword", "UK", "War", "French", "Farce", "Costume",
-                                          "Coming of Age", "Animation", "Alien", "Feature", "Future", "Gay/Lesbian", "Ireland", "Monster", "New Zealand", "Occult",
-                                          "Military", "Supernatural", "Television", "Armed Forces", "Commandos", "Literary"
-                                          };
+        {
+            "Children", "Parody", "Period", "Prehistoric", "Superhero", "Sword", "UK", "War", "French", "Farce", "Costume",
+            "Coming of Age", "Animation", "Alien", "Feature", "Future", "Gay/Lesbian", "Ireland", "Monster", "New Zealand", "Occult",
+            "Military", "Supernatural", "Television", "Armed Forces", "Commandos", "Literary"
+        };
 
         public static List<string> SanitizeClassList(List<string> pls)
         {
@@ -253,18 +260,18 @@ namespace TCore.Scrappy
             List<string> plsNew = new List<string>();
 
             foreach (string sCheck in pls)
-                {
+            {
                 string sCanon = sCheck.ToLower();
                 bool fGotGeneric = false;
 
                 foreach (string sGeneric in s_mpGeneric.Keys)
-                    {
+                {
                     if (sCanon.Contains(sGeneric))
-                        {
+                    {
                         fGotGeneric = true;
                         classes.Add(s_mpGeneric[sGeneric]);
-                        }
                     }
+                }
 
                 if (fGotGeneric)
                     continue; // don't look for specifics if we got one or more generics
@@ -280,7 +287,7 @@ namespace TCore.Scrappy
 
 // fallthrough
                 classes.Add(sCheck);
-                }
+            }
 
             foreach (string s in classes)
                 plsNew.Add(s);
@@ -357,6 +364,5 @@ namespace TCore.Scrappy
 
             Assert.AreEqual(plsExpected, plsInput);
         }
-
     }
 }

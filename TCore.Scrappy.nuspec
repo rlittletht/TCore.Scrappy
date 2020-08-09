@@ -9,7 +9,7 @@
     <projectUrl>https://github.com/rlittletht/TCore.Scrappy</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Basic functions for scraping content from an html page, including fetching</description>
-    <releaseNotes>Update to use proper authentication for ISBNDB</releaseNotes>
+    <releaseNotes>Fix DVD update to only reflect category update when value changes</releaseNotes>
     <copyright>Copyright 2020</copyright>
 	<dependencies>
 		<group targetFramework="net461">

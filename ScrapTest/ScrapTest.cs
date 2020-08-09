@@ -40,7 +40,7 @@ namespace ScrapTest
                 m_sTestArg = sParam;
             else if (cls.Switch == "pw")
                 m_sPassword = sParam;
-            
+
             return true;
         }
 
@@ -51,15 +51,16 @@ namespace ScrapTest
 
         public void ParseCmdLine(string[] args)
         {
-            CmdLineConfig cfg = new CmdLineConfig(new CmdLineSwitch[]
-                                                      {
-                                                      new CmdLineSwitch("I", true, false, "Generic ISBN scrape", "Generic ISBN", null),
-                                                      new CmdLineSwitch("U", true, false, "Generic UPC scrape", "Generic UPC", null),
-                                                      new CmdLineSwitch("i", false, false, "test input", "input", null),
-                                                      new CmdLineSwitch("pw", false, false, "password", "password", null),
-                                                      new CmdLineSwitch("D", true, false, "Scrape DVD Info", "DVD", null),
-                                                      new CmdLineSwitch("B", true, false, "Scrape Book Info", "Book", null),
-                                                      });
+            CmdLineConfig cfg = new CmdLineConfig(
+                new CmdLineSwitch[]
+                {
+                    new CmdLineSwitch("I", true, false, "Generic ISBN scrape", "Generic ISBN", null),
+                    new CmdLineSwitch("U", true, false, "Generic UPC scrape", "Generic UPC", null),
+                    new CmdLineSwitch("i", false, false, "test input", "input", null),
+                    new CmdLineSwitch("pw", false, false, "password", "password", null),
+                    new CmdLineSwitch("D", true, false, "Scrape DVD Info", "DVD", null),
+                    new CmdLineSwitch("B", true, false, "Scrape Book Info", "Book", null),
+                });
 
             CmdLine cmdLine = new CmdLine(cfg);
 
@@ -69,9 +70,9 @@ namespace ScrapTest
                 throw new Exception(sError);
 
             if (m_tm == TestMethod.Unknown)
-                {
+            {
                 cmdLine.Usage(ConsoleWriteDelegate);
-                }
+            }
 
         }
 
@@ -83,7 +84,7 @@ namespace ScrapTest
             string sError;
 
             if (DVD.FScrapeDvd(dvd, out set, out sError))
-                {
+            {
                 Console.WriteLine("\nDVD:");
                 Console.WriteLine("ScanCode: {0}", dvd.ScanCode);
                 Console.WriteLine("Title: {0}", dvd.Title);
@@ -92,11 +93,11 @@ namespace ScrapTest
                 Console.WriteLine("MediaType: {0}", dvd.MediaType);
                 Console.WriteLine("CoverSrc: {0}", dvd.CoverSrc);
 
-                }
+            }
             else
-                {
+            {
                 Console.WriteLine("DVD Scrape failed: {0}", sError);
-                }
+            }
         }
 
         void CallBN_Book(string sParam)
@@ -105,7 +106,7 @@ namespace ScrapTest
             string sError;
 
             if (Book.FScrapeBook(book, out sError))
-                {
+            {
                 Console.WriteLine("\nBook:");
                 Console.WriteLine("ScanCode: {0}", book.ScanCode);
                 Console.WriteLine("Title: {0}", book.Title);
@@ -115,9 +116,9 @@ namespace ScrapTest
                 Console.WriteLine("Summary: {0}", book.Summary);
             }
             else
-                {
+            {
                 Console.WriteLine("Book Scrape failed: {0}", sError);
-                }
+            }
         }
 
         public void Run(string[] args)
@@ -128,7 +129,7 @@ namespace ScrapTest
                 return;
 
             switch (m_tm)
-                {
+            {
                 case TestMethod.GenericUPC:
                     Console.WriteLine("Test method returned: {0}", TCore.Scrappy.GenericUPC.FetchTitleFromUPC(m_sTestArg));
                     break;
@@ -141,7 +142,7 @@ namespace ScrapTest
                 case TestMethod.BarnesAndNoble_Book:
                     CallBN_Book(m_sTestArg);
                     break;
-                }
+            }
 
         }
     }
