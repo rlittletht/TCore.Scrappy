@@ -124,7 +124,7 @@ namespace TCore.Scrappy.BarnesAndNoble
                 ExtractTextFromNode(node, sb);
 
                 fSetValue = true;
-                return sb.ToString();
+                return delSanitize(sb.ToString());
             }
 
             return sField;
