@@ -118,7 +118,7 @@ namespace TCore.Scrappy.BarnesAndNoble
 
         static bool FUpdateSummary(DvdElement dvd, WebPage wp, ref string sError)
         {
-            dvd.Summary = Core.GetComplexTextField(dvd.Summary, "//div[@class='text--medium overview-content']", wp, Sanitize.SanitizeSummary, ref sError, out bool fSetValue);
+            dvd.Summary = Core.GetComplexTextField(dvd.Summary, "//div[contains(@class,'text--medium overview-content')]", wp, Sanitize.SanitizeSummary, ref sError, out bool fSetValue);
             return fSetValue;
         }
 

@@ -113,8 +113,22 @@ namespace TCore.Scrappy
                 sTitle = SanitizeStringCore(sTitle, " \\[3 Discs", false, false);
             }
 
+            sTitle = SanitizeStringCore(sTitle, "THE NEW YORK TIMES BESTSELLER!+", false, true);
+            sTitle = SanitizeStringCore(sTitle, "THE USA TODAY BESTSELLER!+", false, true);
             sTitle = SanitizeStringCore(sTitle, "Overview[\r\n]*", false, true);
             sTitle = SanitizeStringCore(sTitle, "[\r\n]+Advertising", true, false);
+
+            // trim leading and trailing whitespace
+            sTitle = sTitle.Trim();
+            // remove any qutoes around the whole string
+            if ((sTitle.StartsWith("\"") || sTitle.StartsWith("'"))
+                && sTitle[sTitle.Length - 1] == sTitle[0])
+            {
+                sTitle = sTitle.Substring(1, sTitle.Length - 2);
+            }
+
+            // and trim one last time
+            sTitle = sTitle.Trim();
             return sTitle;
         }
 
@@ -186,7 +200,10 @@ namespace TCore.Scrappy
         [TestCase("Martyrs [DVD] [2008] [Region 1] [US Import] [NTSC]", true, "Martyrs")]
         [TestCase("The Hobbit: The Desolation of Smaug [3 Discs] [Blu-ray/DVD]", true, "The Hobbit: The Desolation of Smaug")]
         [TestCase("Salt (Unrated) (Deluxe Extended Edition) (Blu-ray) (With INSTAWA", true, "Salt (Unrated) (Deluxe Extended Edition)")]
-        [TestCase("", true, "")]
+        [TestCase("\"This is the story\"", true, "This is the story")]
+        [TestCase("\r\n\"This story\"\r\n", true, "This story")]
+        [TestCase("\"\r\nThis story\r\n\"", true, "This story")]
+        [TestCase("THE NEW YORK TIMES BESTSELLER!\nTesting", true, "Testing")]
         [TestCase("", true, "")]
         [TestCase("", true, "")]
         [TestCase("", true, "")]

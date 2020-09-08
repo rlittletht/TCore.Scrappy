@@ -105,9 +105,9 @@ namespace ScrapTest
             TCore.Scrappy.BarnesAndNoble.Book.BookElement book = new Book.BookElement(sParam);
             string sError;
 
-            if (Book.FScrapeBook(book, out sError))
+            if (Book.FScrapeBook(book, out Book.ScrapeSet set, out sError))
             {
-                Console.WriteLine("\nBook:");
+                Console.WriteLine($"\nBook: (scraped={set}");
                 Console.WriteLine("ScanCode: {0}", book.ScanCode);
                 Console.WriteLine("Title: {0}", book.Title);
                 Console.WriteLine("Author: {0}", book.Author);

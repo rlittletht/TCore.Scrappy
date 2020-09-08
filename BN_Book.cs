@@ -154,19 +154,11 @@ namespace TCore.Scrappy.BarnesAndNoble
             return true;
         }
 
-        public static bool FScrapeBook(BookElement book, out string sError)
+        public static bool FScrapeBook(BookElement book, out ScrapeSet set, out string sError)
         {
-            ScrapeSet set;
-            ScrapeSet setAllLegacy = ScrapeSet.CoverSrc
-                               | ScrapeSet.Summary
-                               | ScrapeSet.Author
-                               | ScrapeSet.ReleaseDate
-                               | ScrapeSet.Title
-                               | ScrapeSet.Series;
-
             bool f = FScrapeBookSet(book, out set, out sError);
 
-            if (!f || set != setAllLegacy)
+            if (!f || set == 0)
                 return false;
 
             return true;
@@ -249,7 +241,7 @@ namespace TCore.Scrappy.BarnesAndNoble
 
         static bool FUpdateSummary(BookElement book, WebPage wp, ref string sError)
         {
-            book.Summary = Core.GetComplexTextField(book.Summary, "//div[@class='text--medium overview-content']", wp, Sanitize.SanitizeSummary, ref sError, out bool fSetValue);
+            book.Summary = Core.GetComplexTextField(book.Summary, "//div[contains(@class,'text--medium overview-content')]", wp, Sanitize.SanitizeSummary, ref sError, out bool fSetValue);
             return fSetValue;
         }
     }
