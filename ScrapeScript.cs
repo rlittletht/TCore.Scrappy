@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Web.Script.Serialization;
+using Newtonsoft.Json;
 using NUnit.Framework;
 
 // ReSharper disable StringIndexOfIsCultureSpecific.1
@@ -150,9 +150,7 @@ namespace TCore.Scrappy
             if (sJson == null)
                 return default(T);
 
-            JavaScriptSerializer jsc = new JavaScriptSerializer();
-
-            return jsc.Deserialize<T>(sJson);
+            return JsonConvert.DeserializeObject<T>(sJson);
         }
 
         #region Tests

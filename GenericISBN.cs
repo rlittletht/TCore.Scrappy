@@ -6,9 +6,9 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web.Script.Serialization;
 using System.Xml;
 using HtmlAgilityPack;
+using Newtonsoft.Json;
 using ScrapySharp.Network;
 
 namespace TCore.Scrappy
@@ -73,9 +73,8 @@ namespace TCore.Scrappy
                             stmr.Close();
                             stm.Close();
 
-                            JavaScriptSerializer jscript = new JavaScriptSerializer();
-
-                            ISBNQueryResponse qr = jscript.Deserialize<ISBNQueryResponse>(sJson);
+                            
+                            ISBNQueryResponse qr = JsonConvert.DeserializeObject<ISBNQueryResponse>(sJson);
 
                             if (qr == null || qr.book.title == null)
                             {
