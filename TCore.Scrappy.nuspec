@@ -9,11 +9,11 @@
     <projectUrl>https://github.com/rlittletht/TCore.Scrappy</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Basic functions for scraping content from an html page, including fetching</description>
-    <releaseNotes>Fix scraping for BN books. THIS IS A BREAKING CHANGE!</releaseNotes>
-    <copyright>Copyright 2020</copyright>
+    <releaseNotes/>
+    <copyright>Copyright 2024</copyright>
 	<dependencies>
 		<group targetFramework="net461">
-			<dependency id="FSharp.Core" version="4.7.2"/>
+			<dependency id="FSharp.Core" version="8.0.200"/>
 			<dependency id="HtmlAgilityPack" version="1.11.24"/>
 			<dependency id="Newtonsoft.Json" version="12.0.3"/>
 		</group>
